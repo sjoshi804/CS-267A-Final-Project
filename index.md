@@ -8,10 +8,11 @@ is_section: true
 ## Introduction
 
 Examples and environment borrowed from www.agentmodels.org
+These particular examples are borrowd from https://agentmodels.org/chapters/4-reasoning-about-agents.html 
 
-## Example 1
 
-<!-- show_single_step_trajectory -->
+## Example 1 : A single step trajectory
+
 ~~~~
 ///fold: restaurant constants
 var ___ = ' ';
@@ -50,9 +51,8 @@ var trajectory = [
 viz.gridworld(world, { trajectory });
 ~~~~
 
-## Example 2
+## Example 2 : Inference with a single step trajectory
 
-<!-- infer_from_single_step_trajectory -->
 ~~~~
 ///fold: create restaurant choice MDP
 var ___ = ' ';
@@ -132,7 +132,7 @@ var posterior = Infer({ model() {
 viz(posterior);
 ~~~~
 
-## Example 3
+## Example 3 : Inferring The Cost of Time and Softmax Noise
 
 ~~~~
 // infer_utilities_timeCost_softmax_noise
@@ -253,8 +253,8 @@ var posterior = posterior(donutSouthTrajectory.slice(0, 1));
 viz.marginals(posterior);
 ~~~~
 
-## Example 4
-<!-- display_multiple_trajectories -->
+## Example 4 : Displaying multiple trajectories
+
 ~~~~
 ///fold: make restaurant choice MDP, naiveTrajectory, donutSouthTrajectory
 var ___ = ' ';
@@ -308,9 +308,9 @@ map(function(trajectory) { viz.gridworld(world, { trajectory }); },
     [naiveTrajectory, donutSouthTrajectory]);
 ~~~~
 
-To perform inference, we just condition on both sequences. (We use concatenation but we could have taken the union of all state-action pairs).
 
-<!-- infer_from_multiple_trajectories -->
+## Example 5 : Infering from multiple trajectories
+
 ~~~~
 ///fold: World and agent are exactly as above
 
@@ -429,52 +429,7 @@ var posterior = posterior(naiveTrajectory.concat(donutSouthTrajectory));
 viz.marginals(posterior);
 ~~~~
 
-## Example 5
-
-~~~~
-var inferBeliefsAndPreferences = function(baseAgentParams, priorPrizeToUtility,
-                                          priorInitialBelief, bandit,
-                                          observedSequence) {
-
-  return Infer({ model() {
-
-    // 1. Sample utilities
-    var prizeToUtility = (priorPrizeToUtility ? sample(priorPrizeToUtility)
-                          : undefined);
-
-    // 2. Sample beliefs
-    var initialBelief = sample(priorInitialBelief);
-
-    // 3. Construct agent given utilities and beliefs
-    var newAgentParams = extend(baseAgentParams, { priorBelief: initialBelief });
-    var agent = makeBanditAgent(newAgentParams, bandit, 'belief', prizeToUtility);
-    var agentAct = agent.act;
-    var agentUpdateBelief = agent.updateBelief;
-
-    // 4. Condition on observations
-    var factorSequence = function(currentBelief, previousAction, timeIndex){
-      if (timeIndex < observedSequence.length) {
-        var state = observedSequence[timeIndex].state;
-        var observation = observedSequence[timeIndex].observation;
-        var nextBelief = agentUpdateBelief(currentBelief, observation, previousAction);
-        var nextActionDist = agentAct(nextBelief);
-        var observedAction = observedSequence[timeIndex].action;
-        factor(nextActionDist.score(observedAction));
-        factorSequence(nextBelief, observedAction, timeIndex + 1);
-      }
-    };
-    factorSequence(initialBelief,'noAction', 0);
-
-    return {
-      prizeToUtility,
-      priorBelief: initialBelief
-    };
-  }});
-};
-~~~~
-
-
-## Example 6 
+## Example 6 : Infering Preferences from a 2-armed Bandit
 
 ~~~~
 ///fold: inferBeliefsAndPreferences, getMarginal
