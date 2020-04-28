@@ -1,5 +1,6 @@
 ## Python version used: 3.7 (use pip3) - should work with python 2.7 too I think
 pycolab
+gym-pycolab
 numpy
 scipy
 matplotlib
