@@ -1,16 +1,17 @@
-# CS 267A Project
+# CS 267A Project - Reinforcement Learning using PyColab Game Engine
 
 ## Setup
 
 ```
-npm install -g browserify uglifyjs watchify grunt-cli
-gem install jekyll
+pip3 install -r requirements.txt
 ```
 
-## Development
-
-Running a local server:
+## Running Example Grid Worlds
 
 ```
-jekyll serve
+python3 four_rooms.py
+
+python3 cliff_walk.py
+
+python3 chain_walk.py
 ```

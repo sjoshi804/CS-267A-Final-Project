@@ -1,9 +1,0 @@
-# Site settings
-title: CS 267A Project
-baseurl: ""
-
-# Build settings
-markdown: kramdown
-
-exclude:
-- node_modules
