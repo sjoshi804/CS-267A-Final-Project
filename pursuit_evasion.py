@@ -116,7 +116,7 @@ def main(argv=()):
   ui = human_ui.CursesUi(
       keys_to_actions={curses.KEY_UP: 0, curses.KEY_DOWN: 1,
                        curses.KEY_LEFT: 2, curses.KEY_RIGHT: 3,
-                       -1: 8},
+                       -1: 4},
       delay=1000)
 
   # Let the game begin!
