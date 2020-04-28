@@ -12,27 +12,29 @@ from pycolab import human_ui
 from pycolab.prefab_parts import sprites as prefab_sprites
 import gym_pycolab
 from gym import spaces
+from gym.wrappers import Monitor
+from time import sleep as sleep
 
 
 GAME_ART = ['#############',
             '#     #     #',
             '#     #     #',
             '#  E  #     #',
-            '#           #',
-            '#     #     #',
-            '### ####### #',
             '#     #     #',
             '#     #     #',
-            '#           #',
+            '#     ##### #',
             '#     #     #',
-            '# P   #     #',
+            '#     #     #',
+            '#P          #',
+            '#     #     #',
+            '#     #     #',
             '#############']
 
 class PursuitEvasionEnv(gym_pycolab.PyColabEnv):
     """A pycolab game env."""
 
     def __init__(self,
-                 max_iterations=10,
+                 max_iterations=1000,
                  default_reward=-1.):
         super(PursuitEvasionEnv, self).__init__(
             max_iterations=max_iterations,
@@ -46,7 +48,7 @@ class PursuitEvasionEnv(gym_pycolab.PyColabEnv):
             sprites={'P': PursuerSprite, 'E': EvaderSprite}, update_schedule=[['E'], ['P']])
 
     def make_colors(self):
-        return {'#': (0, 0, 255)}
+        return {'#': (0, 0, 255), 'P': (255, 0, 0), 'E': (0, 255, 0)}
 
 
 
@@ -96,10 +98,10 @@ class EvaderSprite(prefab_sprites.MazeWalker):
   def update(self, actions, board, layers, backdrop, things, the_plot):
     del layers, backdrop, things   # Unused.
 
-    random_action = randint(0, 3)
+    random_action = randint(0, 4)
 
     # Apply motion commands.
-    if random_action == 0:    # walk upward?
+    if random_action == 0 or random_action == 4:    # walk upward?
       self._north(board, the_plot)
     elif random_action == 1:  # walk downward?
       self._south(board, the_plot)
@@ -108,27 +110,27 @@ class EvaderSprite(prefab_sprites.MazeWalker):
     elif random_action == 3:  # walk rightward?
       self._east(board, the_plot)
 
-
-
 def main(argv=()):
     del argv  # Unused.
 
     # Build a four-rooms game.
-    env = PursuitEvasionEnv()
+    env = Monitor(PursuitEvasionEnv(), './tmp/pursuit_evasion_random_pursuer_vs_random_evader', force=True)
     state = env.reset()
 
     # Random Agent playing as Pursuser
     while True:
-  
-        #Render environment #FIXME: issue with setup causing env.render() to fail on local machine
-        env.render() #might need to run brew upgrade sdl2
-        
+        #Render
+        env.render()
+
         #Agent goes here - random agent for now
         action = env.action_space.sample() 
 
         #Get observations, rewards, termination form environment after taking action
         observation, reward, done, info = env.step(action) 
-            
+
+        #Delay to make video easier to watch
+        sleep(0.2)
+
         if done: 
             break
 

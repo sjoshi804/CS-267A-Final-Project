@@ -6,3 +6,4 @@ assets/_site/*
 node_modules
 .jekyll-metadata
 .jekyll-cache
+tmp
