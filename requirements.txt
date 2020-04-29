@@ -1,4 +1,7 @@
-## Python version used: 3.7 (use pip3) - should work with python 2.7 too I think
+## Python version used: 3.7 (use pip3) 
+torch
+torchvision
+pyro-ppl 
 pycolab
 gym-pycolab
 numpy
