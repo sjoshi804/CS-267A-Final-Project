@@ -20,17 +20,17 @@ GAME_ART = ['#############',
             '#     #     #',
             '#     #     #',
             '#  E  #     #',
-            '#     #     #',
+            '#  P  #     #',
             '#     #     #',
             '#     ##### #',
             '#     #     #',
             '#     #     #',
-            '#P          #',
+            '#           #',
             '#     #     #',
             '#     #     #',
             '#############']
 
-class PursuitEvasionEnv(gym_pycolab.PyColabEnv):
+class OneRandomEvader(gym_pycolab.PyColabEnv):
     """A pycolab game env."""
 
     def __init__(self,
@@ -100,7 +100,7 @@ class EvaderSprite(prefab_sprites.MazeWalker):
 
     random_action = randint(0, 4)
 
-    # Apply motion commands.
+"""     # Apply motion commands.
     if random_action == 0 or random_action == 4:    # walk upward?
       self._north(board, the_plot)
     elif random_action == 1:  # walk downward?
@@ -108,28 +108,31 @@ class EvaderSprite(prefab_sprites.MazeWalker):
     elif random_action == 2:  # walk leftward?
       self._west(board, the_plot)
     elif random_action == 3:  # walk rightward?
-      self._east(board, the_plot)
+      self._east(board, the_plot) """
 
 def main(argv=()):
     del argv  # Unused.
 
     # Build a four-rooms game.
     env = Monitor(PursuitEvasionEnv(), './tmp/pursuit_evasion_random_pursuer_vs_random_evader', force=True)
+    #env = PursuitEvasionEnv()
     state = env.reset()
 
     # Random Agent playing as Pursuser
-    while True:
+    for _ in range(0, 1):
         #Render
         env.render()
 
         #Agent goes here - random agent for now
-        action = env.action_space.sample() 
+        action = 0
 
         #Get observations, rewards, termination form environment after taking action
         observation, reward, done, info = env.step(action) 
-
+        print(env.action_space)
+#        print(observation)
+        print(reward)
         #Delay to make video easier to watch
-        sleep(0.2)
+        #sleep(0.5)
 
         if done: 
             break
