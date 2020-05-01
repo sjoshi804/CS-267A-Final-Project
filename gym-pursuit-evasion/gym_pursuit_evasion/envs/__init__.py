@@ -1,1 +1,1 @@
-from oneRandomEvader import OneRandomEvader
+from .one_random_evader import OneRandomEvaderEnv
