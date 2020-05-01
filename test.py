@@ -2,14 +2,17 @@ import gym
 from gym.wrappers import Monitor
 import gym_pursuit_evasion
 import sys
+import torch
+import pyro
+from time import sleep as sleep
 
 def main(argv=()):
     del argv  # Unused.
 
-    # Build a four-rooms game.
+    # Build an environment
     
     # Record episode
-    env = Monitor(gym.make('one-random-evader-v0'), './tmp/pursuit_evasion_random_pursuer_vs_random_evader', force=True)
+    env = Monitor(gym.make('one-stationary-evader-v0'), './tmp/pursuit_evasion_semi_random_pursuer_vs_stationary_evader', force=True)
 
     # Don't record episode 
     # env = gym.make('one-random-evader-v0')
@@ -22,13 +25,15 @@ def main(argv=()):
         env.render()
 
         #Agent goes here
-        action = env.action_space.sample()
+        action_distribution = torch.distributions.Categorical(torch.tensor([0, 0, 0.5, 0.5]))
+        
+        action = action_distribution.sample().item()
+
+        #Delay to make video easier to watch
+        #sleep(5)
 
         #Get observations, rewards, termination form environment after taking action
         observation, reward, done, info = env.step(action) 
-
-        #Delay to make video easier to watch
-        #sleep(0.5)
 
         if done: 
             break
