@@ -6,16 +6,6 @@
 pip3 install -r requirements.txt
 ```
 
-## Running Pursuit Evasion with Random Evader and Human Pursuer
-
-This runs a game set in the 4 rooms grid with a human pursuer controlled by 
-left right up down keys who is chasing a random evader. The reward for catching
-the evader is 100 and cost of every second is -1. 
-
-```
-python3 -W ignore pursuit_evasion.py
-```
-
 ## Running Pursuit Evasion with Random Evader and Random Pursuer
 
 This runs a game set in the 4 rooms grid with a random pursuer controlled by 
@@ -27,6 +17,16 @@ in the tmp folder.
 
 ```
 python3 -W ignore gym_pursuit_evasion.py
+```
+
+## Running Pursuit Evasion with Random Evader and Human Pursuer
+
+This runs a game set in the 4 rooms grid with a human pursuer controlled by 
+left right up down keys who is chasing a random evader. The reward for catching
+the evader is 100 and cost of every second is -1. 
+
+```
+python3 -W ignore examples/pursuit_evasion.py
 ```
 
 ## Running PyColab Examples
