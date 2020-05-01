@@ -7,3 +7,5 @@ node_modules
 .jekyll-metadata
 .jekyll-cache
 tmp
+gym-pursuit-evasion/gym_pursuit_evasion.egg-info/
+gym-pursuit-evasion/gym_pursuit_evasion/__pycache__/
