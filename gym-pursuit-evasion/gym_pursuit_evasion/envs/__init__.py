@@ -1,1 +1,2 @@
 from .one_random_evader import OneRandomEvaderEnv
+from .one_stationary_evader import OneStationaryEvaderEnv

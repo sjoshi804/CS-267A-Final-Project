@@ -1,4 +1,4 @@
-"""An implementation of the pursuit-evasion game with a random evader with a gym environment wrapper using gym-pycolab."""
+"""An implementation of the pursuit-evasion game with a stationary evader with a gym environment wrapper using gym-pycolab."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -15,13 +15,11 @@ from gym import spaces
 
 
 GAME_ART = ['#######################',
-            '#                    E#',
-            '#                     #',
-            '#P                    #',
+            '#P                   E#',            
             '#######################']
+            
 
-
-class OneRandomEvaderEnv(gym_pycolab.PyColabEnv):
+class OneStationaryEvaderEnv(gym_pycolab.PyColabEnv):
     """A gridworld based environment with 1 randomly moving evader. The agent 
     must catch the evader, reward = -1 for every timestep that the evader is 
     not caught and reward = 0 when evader is caught. Evader is 'caught' when
@@ -31,13 +29,13 @@ class OneRandomEvaderEnv(gym_pycolab.PyColabEnv):
     def __init__(self,
                  max_iterations=1000,
                  default_reward=-1.):
-        super(OneRandomEvaderEnv, self).__init__(
+        super(OneStationaryEvaderEnv, self).__init__(
             max_iterations=max_iterations,
             default_reward=default_reward,
             action_space=spaces.Discrete(4))
 
     def make_game(self):
-        """Builds and returns a game with Pursuader and Evader."""
+        """Builds and returns a four-rooms game with Pursuader and Evader."""
         return ascii_art.ascii_art_to_game(
             GAME_ART, what_lies_beneath=' ',
             sprites={'P': PursuerSprite, 'E': EvaderSprite}, update_schedule=[['E'], ['P']])
@@ -98,15 +96,4 @@ class EvaderSprite(prefab_sprites.MazeWalker):
 
   def update(self, actions, board, layers, backdrop, things, the_plot):
     del layers, backdrop, things   # Unused.
-
-    random_action = randint(0, 4)
-
-    # Apply motion commands.
-    if random_action == 0 or random_action == 4:    # walk upward?
-      self._north(board, the_plot)
-    elif random_action == 1:  # walk downward?
-      self._south(board, the_plot)
-    elif random_action == 2:  # walk leftward?
-      self._west(board, the_plot)
-    elif random_action == 3:  # walk rightward?
-      self._east(board, the_plot) 
+    #Do nothing
