@@ -8,5 +8,5 @@ let _observe(OPTIMAL_NEXT) in
 let NEXT_NEXT_ACTION = discrete(0.25, 0.25, 0.25, 0.25) in 
 let NEXT_NEXT_STATE = transition_dynamics(NEXT_STATE, NEXT_ACTION) in 
 let OPTIMAL_NEXT_NEXT = flip exp(rewards(NEXT_NEXT_ACTION, NEXT_NEXT_STATE))
-let _observe(OPTIMAL_NEXT_NEXT) in
+let _observe(OPTIMAL_NEXT_NEXT) in // need to next next next next and so on ...
 ACTION
