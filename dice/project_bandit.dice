@@ -1,0 +1,6 @@
+let ACTION = discrete(0.25, 0.25, 0.25, 0.25) in 
+let OPTIMAL_NOW = 
+if ACTION == int(4, 3) then flip 1.0 //reward(S, ACTION) = 0, therefore exp(reward) = 1
+else flip 0.000045 in //reward(S, ACTION) = -10, therefore exp(reward) = 0.000045
+let _ = observe(OPTIMAL_NOW) in 
+ACTION
