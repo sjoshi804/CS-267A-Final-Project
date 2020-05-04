@@ -1,9 +1,0 @@
-## Python version used: 3.7 (use pip3) 
-torch
-torchvision
-pyro-ppl 
-pycolab
-gym-pycolab
-numpy
-scipy
-matplotlib

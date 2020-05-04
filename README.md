@@ -3,7 +3,7 @@
 ## Setup
 
 ```
-pip3 install -r requirements.txt
+pip3 install -e gym-pursuit-evasion
 ```
 
 ## Running Pursuit Evasion with Random Evader and Random Pursuer
