@@ -4,8 +4,10 @@
 
 
 ### Rough sketch
-Dynamically create Dice Programs to represent appropriate probability distirbutions
-Parameters: reward function, state transistion dynamics of the environment, action prior (assume to be uniform?), trajectory max length
+
+- Dynamically create Dice Programs to represent appropriate probability distirbutions
+ 
+- Parameters: reward function, state transistion dynamics of the environment, action prior (assume to be uniform?), trajectory max length
 
 ### Possible Challenges
 
