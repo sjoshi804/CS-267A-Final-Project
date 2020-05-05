@@ -2,9 +2,11 @@ fun transition(STATE: int(8), ACTION: int(4))
 {
     if STATE == int(8, 0) && ACTION == int(4, 3)
     then discrete(0.0, 0.0, 0.0, 0.0, 0.25, 0.25, 0.0, 0.50)
-    else if STATE == int(8, 0) && ACTION == int(4, 1) 
+    else 
+    if STATE == int(8, 0) && ACTION == int(4, 1) 
     then discrete(0.25, 0.25, 0.25, 0.0, 0.0, 0.0, 0.0, 0.25) 
-    else discrete(0.25, 0.25, 0.25, 0.0, 0.0, 0.0, 0.0, 0.0)
+    else
+    discrete(0.25, 0.25, 0.25, 0.0, 0.0, 0.0, 0.0, 0.0)
 }
 
 let STATE = int(8, 0) in 
@@ -14,5 +16,5 @@ let NEXT_STATE = transition(STATE, ACTION) in
 let NEXT_ACTION = discrete(0.25, 0.25, 0.25, 0.25) in 
 let OPTIMAL_NEXT = 
 if NEXT_STATE == int(8, 7) && NEXT_ACTION == int(4, 3) then flip 1.0 else flip 0.000045 in
-let _ = observe(OBSERVE_NOW && OPTIMAL_NEXT) in
+let _ = observe(OPTIMAL_NOW && OPTIMAL_NEXT) in
 ACTION
