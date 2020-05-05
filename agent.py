@@ -25,7 +25,7 @@ def agent_guide():
     up = pyro.param("up", torch.tensor(0.25))
     down = pyro.param("down", torch.tensor(0.25))
     left = pyro.param("left", torch.tensor(0.25))
-    right = torch.tensor(1 - up - down - left)
+    right = pyro.param("right", torch.tensor(1 - up - down - left))
     action = pyro.sample("action", dist.Categorical(torch.tensor([up, down, left, right])))
     return pyro.sample("optimal", dist.Bernoulli(torch.tensor([exp(reward_function(action))])))
 
