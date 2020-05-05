@@ -81,7 +81,7 @@ def translate_transition_function(transition_function, state_space, action_space
     len_action_space = len(action_space)
     state_type = get_dice_type_of_int(len_state_space)
     action_type = get_dice_type_of_int(len_action_space)
-    statement = FUNCTION + "reward" + LBRACKET + "STATE: " + state_type + COMMA + "ACTION: " +  action_type + RBRACKET
+    statement = FUNCTION + SPACE + "reward" + LBRACKET + "STATE: " + state_type + COMMA + "ACTION: " +  action_type + RBRACKET
     statement += NEWLINE + "{" + NEWLINE
 
     #Construct Function Body
@@ -105,3 +105,11 @@ def translate_transition_function(transition_function, state_space, action_space
     #Construct Function End
     statement += NEWLINE + "}"
     return statement
+
+def dummy_transition_function(state, action):
+    return [0.5, 0.5]
+
+state_space = [0, 1]
+action_space = [0, 1, 2]
+
+print(translate_transition_function(dummy_transition_function, state_space, action_space))
