@@ -106,8 +106,8 @@ class OneStationaryEvaderEnv(gym_pycolab.PyColabEnv):
       #Define transition function
       def transition_function(observed_state, action):
 
-        #set default next state to current state
-        next_state = observed_state
+        #copies current state into next state
+        next_state = deepcopy(observed_state)
 
         #see if action valid and if so return new state
         for row in range(0, len(observed_state)):
