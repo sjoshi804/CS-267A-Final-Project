@@ -196,15 +196,19 @@ class OneStationaryEvaderEnv(gym_pycolab.PyColabEnv):
     def uncolor_board(self, board):
       #Define uncoloring function
       def uncolor_square(square):
-        uncoloring = dict((v,k) for k,v in self.color_mapping.items())
-        if square in uncoloring:
-          return uncoloring[square]
+        #FIXME: Make this general - tried with reversing key, value but run into type issues
+        if square[0] == 0 and square[1] == 0 and square[2] == 255:
+          return '#'
+        elif square[0] == 0 and square[1] == 255 and square[2] == 0:
+          return 'E'
+        elif square[0] == 255 and square[1] == 0 and square[2] == 0:
+          return 'P'
         else:
           return ' '
 
       art = []
       for row in board:
-        board.append([uncolor_square(square) for square in row])
+        art.append([uncolor_square(square) for square in row])
        
       return art    
 
