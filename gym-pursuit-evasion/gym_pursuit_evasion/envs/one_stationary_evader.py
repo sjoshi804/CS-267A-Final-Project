@@ -51,6 +51,12 @@ class OneStationaryEvaderEnv(gym_pycolab.PyColabEnv):
     def make_colors(self):
         return self.color_mapping
  
+    def get_initial_state(self):
+      board = []
+      for row in GAME_ART:
+        board.append(list(row))
+      return board
+
     def get_reward_function(self):
       
       #Define reward function
