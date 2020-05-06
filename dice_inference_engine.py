@@ -2,7 +2,7 @@ from math import exp as exp
 import os 
 import subprocess
 
-    # String Literals
+# String Literals
 LET = "let "
 IN = "in"
 IF = "if "
@@ -38,6 +38,7 @@ class DiceProgramGenerator:
 
     #Constructor
     def __init__(self, state_space, action_space, initial_state, action_prior,  reward_function, transition_function, max_trajectory_length):
+        #Set instance variables
         self.state_space = state_space
         self.action_space = action_space
         self.initial_state = initial_state
@@ -45,9 +46,12 @@ class DiceProgramGenerator:
         self.reward_function = reward_function
         self.transition_function = transition_function
         self.max_trajectory_length = max_trajectory_length
+    
+        #Construct and cache copy of base program
         self.dice_reward_function = self.translate_reward_function(self.reward_function, self.state_space)
         self.dice_transition_function = self.translate_transition_function(self.transition_function, self.state_space, self.action_space)
         self.base_program = self.dice_reward_function + NEWLINE + self.dice_transition_function + NEWLINE + self.base_trajectory_distribution(self.max_trajectory_length, self.initial_state, self.action_prior)
+
 
     # Helper Functions
     def let_expr(self, var, expression):
@@ -134,7 +138,7 @@ class DiceProgramGenerator:
             state_space = self.state_space
         if action_space is None:
             action_space = self.action_space
-
+        
         #Constructing Function Signature
         len_state_space = len(state_space)
         len_action_space = len(action_space)
@@ -142,11 +146,10 @@ class DiceProgramGenerator:
         action_type = self.get_dice_type_of_int(len_action_space)
         expr = FUNCTION + SPACE + "transition" + LBRACKET + "STATE: " + state_type + COMMA + "ACTION: " +  action_type + RBRACKET
         expr += NEWLINE + "{" + NEWLINE
-
+        
         #Construct Function Body
         for state in state_space:
             for action in action_space:
-
                 current_state = state_space.index(state)
                 current_action = action_space.index(action)
                 next_state_distribution = transition_function(state, action)
@@ -157,10 +160,10 @@ class DiceProgramGenerator:
                 then_expression = self.discrete_distribution(next_state_distribution)
 
                 expr += self.if_expr_with_else_unspecified(if_condition, then_expression)
-        
+
         # Adding extra else condition at end, this should never actually end up being used
         expr += self.get_dice_int(0, len_state_space)
-
+        
         #Construct Function End
         expr += NEWLINE + "}"
         return expr + NEWLINE
@@ -244,13 +247,10 @@ class DiceProgramGenerator:
         expr += RBRACKET
         return expr 
 
-    def next_action_query(self, current_state, current_step_number, state_space=None):
-        #Default Arguments
-        if state_space is None:
-            state_space = self.state_space
+    def next_action_query(self, current_state, current_step_number, state_space):
 
         current_state_dice = self.get_dice_int(state_space.index(current_state), len(state_space))
-        expr = self.observe_expr(self.equals_comparison(STATE_ + str(current_step_number), self.get_dice_int(current_state, len(state_space))))
+        expr = self.observe_expr(self.equals_comparison(STATE_ + str(current_step_number), current_state_dice))
         expr += ACTION_ + str(current_step_number)
         return expr
 
@@ -301,14 +301,14 @@ class DiceInferenceEngine:
         #Check if directory to store inference file exists or not
         if not os.path.exists('.infer'):
             os.mkdir('.infer')
-
+        
         #Create dice program and execute it
         with open(".infer/step_" + str(self.step_num) + ".dice", "w") as dice_file:
             dice_file.write(self.program.next_action(state, self.step_num))
         cmd = self.path_to_dice + " " + ".infer/step_" + str(self.step_num) + ".dice"
         process = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE)
         output, error = process.communicate()
-
+        
         # If error executing then print error and return None
         if not error is None:
             print(error.decode("utf-8"))
@@ -318,10 +318,11 @@ class DiceInferenceEngine:
         if output.decode("utf-8")[0:5] != "Value":
             print(output.decode("utf-8"))
             return None
-
+        
         #Increment step num
         self.step_num += 1
-
+        
+        
         # Parse Output and Return List
         return self.parse_output(output.decode("utf-8"))
     
@@ -335,7 +336,7 @@ class DiceInferenceEngine:
         return list_of_prob
     
 
-#DUMMY PROBLEM TO TEST - PURSUER IN TINY CORRIDOR AGAINST STATIONARY EVADER
+""" #DUMMY PROBLEM TO TEST - PURSUER IN TINY CORRIDOR AGAINST STATIONARY EVADER
 def dummy_transition_function(state, action):
     distribution = [0] * 10
     if action == 0:
@@ -367,4 +368,4 @@ dice = DiceInferenceEngine(dummy_state_space, dummy_action_space, dummy_initial_
 state = 0
 for x in range(0, 10):
     print(dice.next(state))
-    state += 1
+    state += 1 """
