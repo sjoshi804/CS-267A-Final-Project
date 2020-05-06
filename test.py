@@ -44,12 +44,12 @@ def main(argv=()):
 
     #Create Agent
     agent = infer.DiceInferenceEngine(observed_state_space, action_space, initial_state_dist, action_prior, reward_function, transition_function, max_trajectory_length)
-    print("\n\n\n\nAgent created.\n")
+    print("\nAgent created.\n")
     #Set current observed state to initial state
     uncolored_obs = initial_state
     #Initialize actions list
     actions = []
-    print("Infering action " + str(0) + "\n")
+    print("\nInfering action " + str(0) + "\n")
     actions.append(dist.Categorical(torch.tensor(agent.next(uncolored_obs))).sample().item())
 
     #Game Loop
@@ -70,7 +70,7 @@ def main(argv=()):
 
         #Pick next action based on agent's reasoning
         uncolored_obs = env.uncolor_board(observation)
-        print("Infering action " + str(t + 1) + "\n")
+        print("\nInfering action " + str(t + 1) + "\n")
         actions.append(dist.Categorical(torch.tensor(agent.next(uncolored_obs))).sample().item())
 
 
