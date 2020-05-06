@@ -2,6 +2,7 @@ import gym
 from gym.wrappers import Monitor
 import gym_pursuit_evasion
 import sys
+import torch
 import torch.distributions as dist
 from time import sleep as sleep
 import dice_inference_engine as infer
@@ -12,7 +13,7 @@ def main(argv=()):
     # Build an environment
     
     # Create and record episode - remove Monitor statement if recording not desired
-    env = Monitor(gym.make('one-stationary-evader-v0'), './tmp/pursuit_evasion_semi_random_pursuer_vs_stationary_evader', force=True)
+    env = Monitor(gym.make('one-stationary-evader-v0'), './tmp/pursuit_evasion_infer_pursuer_vs_stationary_evader', force=True)
 
     #Reset state
     state = env.reset()
@@ -45,22 +46,30 @@ def main(argv=()):
     agent = infer.DiceInferenceEngine(observed_state_space, action_space, initial_state_dist, action_prior, reward_function, transition_function, max_trajectory_length)
 
     #Set current observed state to initial state
-    observed_state = initial_state
+    uncolored_obs = initial_state
+    #Initialize actions list
+    actions = []
+    actions.append(dist.Categorical(torch.tensor(agent.next(uncolored_obs))).sample().item())
 
     #Game Loop
     for t in range(0, 11):
 
         #Render
         env.render()
-
-        #Pick action based on agent's reasoning
-        action_dist = agent.next(observed_state)
-        print(action_dist)
+         
         #Delay to make video easier to watch
         #sleep(5)
 
-        #Get observations, rewards, termination form environment after taking action
-       #  _, reward, done, info = env.step(action) 
+        #Take action and get observations, rewards, termination from environment 
+        observation, reward, done, info = env.step(actions[t]) 
+
+        #Pick next action based on agent's reasoning
+        uncolored_obs = env.uncolor_board(observation)
+        actions.append(dist.Categorical(torch.tensor(agent.next(uncolored_obs))).sample().item())
+
+        #If termination signal received, break out of loop
+        if done:
+            break
  
 
     env.close()
