@@ -25,182 +25,236 @@ ACTION = "ACTION"
 STATE_ = "STATE_"
 ACTION_ = "ACTION_"
 
-# Helper Functions
-def let_expr(var, expression):
-    return LET + str(var) + ASSIGN_EQUAL + NEWLINE + INDENT + str(expression) + SPACE + IN + NEWLINE
+class DiceProgramGenerator:
+    """A tool to create dice programs corresponding to the RL as inference problem.
 
-def if_expr(condition, then_expression, else_expression):
-    return IF + str(condition) + NEWLINE + THEN + str(then_expression) + NEWLINE + ELSE + str(else_expression)
+    Inputs: state_space, action_space, initial_state, action_prior, reward_function, transition_function
 
-def if_expr_with_else_unspecified(condition, then_expression):
-    return IF + str(condition) + NEWLINE + INDENT + THEN + str(then_expression) + ELSE + NEWLINE
+    Typically use method next_action(current_state, current_step_number) to infer next action
 
-def observe_expr(var):
-    return let_expr("_", OBSERVE + LBRACKET + str(var) + RBRACKET)
+    """
+    #Constructor
+    def __init__(self, state_space, action_space, initial_state, action_prior,  reward_function, transition_function, max_trajectory_length):
+        self.state_space = state_space
+        self.action_space = action_space
+        self.initial_state = initial_state
+        self.action_prior = action_prior
+        self.reward_function = reward_function
+        self.transition_function = transition_function
+        self.max_trajectory_length = max_trajectory_length
+        self.dice_reward_function = self.translate_reward_function(self.reward_function, self.state_space)
+        self.dice_transition_function = self.translate_transition_function(self.transition_function, self.state_space, self.action_space)
+        self.base_program = self.dice_reward_function + NEWLINE + self.dice_transition_function + NEWLINE + self.base_trajectory_distribution(self.max_trajectory_length, self.initial_state, self.action_prior)
 
-def get_approx_dice_dist(distribution):
-    new_dist = []
-    string_dist = []
-    #convert all but last element to strings
-    for x in distribution[:-1]:
-        string_dist.append(get_dice_prob(x))
-        new_dist.append(float(get_dice_prob(x)))
-    #set last element by calculating remaining probability mass - to ensure always adds up to 1
-    remainder = 1
-    for x in new_dist:
-        remainder -= x
-    string_dist.append(f'{remainder:9.8f}')
-    #NOTE: Possibility of issues of distribution not normalized in dice due to overflow
-    return string_dist
-    
+    # Helper Functions
+    def let_expr(self, var, expression):
+        return LET + str(var) + ASSIGN_EQUAL + NEWLINE + INDENT + str(expression) + SPACE + IN + NEWLINE
 
-def discrete_distribution(distribution):
-    #get stringified approximated dice distribution
-    dice_dist = get_approx_dice_dist(distribution)
-    expr = DISCRETE + LBRACKET + dice_dist[0]
-    for x in dice_dist[1:]:
-        expr += COMMA + SPACE + x
-    
-    expr += RBRACKET
-    return expr
+    def if_expr(self, condition, then_expression, else_expression):
+        return IF + str(condition) + NEWLINE + THEN + str(then_expression) + NEWLINE + ELSE + str(else_expression)
 
-def flip_expr(prob_of_success):
-    return FLIP + SPACE + get_dice_prob(prob_of_success)
+    def if_expr_with_else_unspecified(self, condition, then_expression):
+        return IF + str(condition) + NEWLINE + INDENT + THEN + str(then_expression) + ELSE + NEWLINE
 
-def get_dice_type_of_int(size_of_space):
-    return INT + LBRACKET + str(size_of_space) + RBRACKET
+    def observe_expr(self, var):
+        return self.let_expr("_", OBSERVE + LBRACKET + str(var) + RBRACKET)
 
-def get_dice_int(num, size_of_space):
-    return INT + LBRACKET + str(size_of_space) + COMMA + str(num) + RBRACKET
+    def get_approx_dice_dist(self, distribution):
+        new_dist = []
+        string_dist = []
+        #convert all but last element to strings
+        for x in distribution[:-1]:
+            string_dist.append(self.get_dice_prob(x))
+            new_dist.append(float(self.get_dice_prob(x)))
+        #set last element by calculating remaining probability mass - to ensure always adds up to 1
+        remainder = 1
+        for x in new_dist:
+            remainder -= x
+        string_dist.append(f'{remainder:9.8f}')
+        #NOTE: Possibility of issues of distribution not normalized in dice due to overflow
+        return string_dist
+        
 
-def get_dice_prob(num):
-    if num == 0:
-        return "0.0"
-    elif num == 1:
-        return "1.0"
-    else:
-        return f'{num:9.7f}'
+    def discrete_distribution(self, distribution):
+        #get stringified approximated dice distribution
+        dice_dist = self.get_approx_dice_dist(distribution)
+        expr = DISCRETE + LBRACKET + dice_dist[0]
+        for x in dice_dist[1:]:
+            expr += COMMA + SPACE + x
+        
+        expr += RBRACKET
+        return expr
 
-def equals_comparison(a, b):
-    return str(a) + EQUALS + str(b)
+    def flip_expr(self, prob_of_success):
+        return FLIP + SPACE + self.get_dice_prob(prob_of_success)
 
-def and_conditions(cond_1, cond_2):
-    return str(cond_1) + AND + str(cond_2)
+    def get_dice_type_of_int(self, size_of_space):
+        return INT + LBRACKET + str(size_of_space) + RBRACKET
 
-'''
-Inputs:
-- state space 
-List of all states
+    def get_dice_int(self, num, size_of_space):
+        return INT + LBRACKET + str(size_of_space) + COMMA + str(num) + RBRACKET
 
-- action space
-List of all actions - transition function abstracts away idea of some actions not being avaiable in some states
+    def get_dice_prob(self, num):
+        if num == 0:
+            return "0.0"
+        elif num == 1:
+            return "1.0"
+        else:
+            return f'{num:9.7f}'
 
-- transition_function - takes in state and action returns a list of length = state_space which 
-is list of probabilities to transitioning to the state at that index in state space
+    def equals_comparison(self, a, b):
+        return str(a) + EQUALS + str(b)
 
-e.g. For 2 state example if state space = [A, B], action space = [1, 2, 3, 4], current state = A, current action = 1
-s.t. 50% chance after this action we end up back in A and 50% chance we end up in B then
-transition_function(A, 1) returns [0.5, 0.5]
-'''
-def translate_transition_function(transition_function, state_space, action_space):
-    #Constructing Function Signature
-    len_state_space = len(state_space)
-    len_action_space = len(action_space)
-    state_type = get_dice_type_of_int(len_state_space)
-    action_type = get_dice_type_of_int(len_action_space)
-    expr = FUNCTION + SPACE + "transition" + LBRACKET + "STATE: " + state_type + COMMA + "ACTION: " +  action_type + RBRACKET
-    expr += NEWLINE + "{" + NEWLINE
+    def and_conditions(self, cond_1, cond_2):
+        return str(cond_1) + AND + str(cond_2)
 
-    #Construct Function Body
-    for state in state_space:
-        for action in action_space:
+    '''
+    Inputs:
+    - state space 
+    List of all states
 
+    - action space
+    List of all actions - transition function abstracts away idea of some actions not being avaiable in some states
+
+    - transition_function - takes in state and action returns a list of length = state_space which 
+    is list of probabilities to transitioning to the state at that index in state space
+
+    e.g. For 2 state example if state space = [A, B], action space = [1, 2, 3, 4], current state = A, current action = 1
+    s.t. 50% chance after this action we end up back in A and 50% chance we end up in B then
+    transition_function(A, 1) returns [0.5, 0.5]
+    '''
+    def translate_transition_function(self, transition_function=None, state_space=None, action_space=None):
+        #Default Arguments
+        if transition_function is None:
+            transition_function = self.transition_function
+        if state_space is None:
+            state_space = self.state_space
+        if action_space is None:
+            action_space = self.action_space
+
+        #Constructing Function Signature
+        len_state_space = len(state_space)
+        len_action_space = len(action_space)
+        state_type = self.get_dice_type_of_int(len_state_space)
+        action_type = self.get_dice_type_of_int(len_action_space)
+        expr = FUNCTION + SPACE + "transition" + LBRACKET + "STATE: " + state_type + COMMA + "ACTION: " +  action_type + RBRACKET
+        expr += NEWLINE + "{" + NEWLINE
+
+        #Construct Function Body
+        for state in state_space:
+            for action in action_space:
+
+                current_state = state_space.index(state)
+                current_action = action_space.index(action)
+                next_state_distribution = transition_function(state, action)
+
+                state_condition = self.equals_comparison(STATE, self.get_dice_int(current_state, len_state_space))
+                action_condition = self.equals_comparison("ACTION", self.get_dice_int(current_action, len_action_space))
+                if_condition = self.and_conditions(state_condition, action_condition)
+                then_expression = self.discrete_distribution(next_state_distribution)
+
+                expr += self.if_expr_with_else_unspecified(if_condition, then_expression)
+        
+        # Adding extra else condition at end, this should never actually end up being used
+        expr += self.get_dice_int(0, len_state_space)
+
+        #Construct Function End
+        expr += NEWLINE + "}"
+        return expr + NEWLINE
+
+    def translate_reward_function(self, reward_function=None, state_space=None):
+        #Default Arguments
+        if reward_function is None:
+            reward_function = self.reward_function
+        if state_space is None:
+            state_space = self.state_space
+
+        #Constructing Function Signature
+        len_state_space = len(state_space)
+        state_type = self.get_dice_type_of_int(len_state_space)
+        expr = FUNCTION + SPACE + "reward" + LBRACKET + "STATE: " + state_type + RBRACKET
+        expr += NEWLINE + "{" + NEWLINE
+
+        #Construct Function Body
+        for state in state_space:
+            prob_of_optimal = exp(reward_function(state))
             current_state = state_space.index(state)
-            current_action = action_space.index(action)
-            next_state_distribution = transition_function(state, action)
+            
+            if_condition = self.equals_comparison(STATE, self.get_dice_int(current_state, len_state_space))
+            then_expression = self.flip_expr(prob_of_optimal)
 
-            state_condition = equals_comparison(STATE, get_dice_int(current_state, len_state_space))
-            action_condition = equals_comparison("ACTION", get_dice_int(current_action, len_action_space))
-            if_condition = and_conditions(state_condition, action_condition)
-            then_expression = discrete_distribution(next_state_distribution)
+            expr += self.if_expr_with_else_unspecified(if_condition, then_expression)
+        
+        # Adding extra else condition at end, this should never actually end up being used
+        expr += self.flip_expr(0)
 
-            expr += if_expr_with_else_unspecified(if_condition, then_expression)
-    
-    # Adding extra else condition at end, this should never actually end up being used
-    expr += get_dice_int(0, len_state_space)
+        #Construct Function End
+        expr += NEWLINE + "}"
+        return expr + NEWLINE
 
-    #Construct Function End
-    expr += NEWLINE + "}"
-    return expr + NEWLINE
+    #Call function with parameters STATE ACTION or just STATE if no action specified
+    def function_call(self, func_name, state_name, action_name=""):
+        if action_name == "":
+            return func_name + LBRACKET + state_name + RBRACKET
+        else:
+            return func_name + LBRACKET + state_name + COMMA + SPACE + action_name + RBRACKET
 
-def translate_reward_function(reward_function, state_space):
-    #Constructing Function Signature
-    len_state_space = len(state_space)
-    state_type = get_dice_type_of_int(len_state_space)
-    expr = FUNCTION + SPACE + "reward" + LBRACKET + "STATE: " + state_type + RBRACKET
-    expr += NEWLINE + "{" + NEWLINE
+    '''
+    Inputs:
 
-    #Construct Function Body
-    for state in state_space:
-        prob_of_optimal = exp(reward_function(state))
-        current_state = state_space.index(state)
-          
-        if_condition = equals_comparison(STATE, get_dice_int(current_state, len_state_space))
-        then_expression = flip_expr(prob_of_optimal)
+    - initial_state - distribution over initial states, specified as a list of length = state space
+    - max_trajectory_length - since dice can't do recursion, it can't handle infinite trajectories, hence
+    we must use finite trajectories, this is the maximum length of the trajectory
+    '''
+    def base_trajectory_distribution(self, max_trajectory_length=None, initial_state=None, action_prior=None):
+        #Default Arguments
+        if max_trajectory_length is None:
+            max_trajectory_length=self.max_trajectory_length
+        if initial_state is None:
+            initial_state=self.initial_state
+        if action_prior is None:
+            action_prior=self.action_prior
 
-        expr += if_expr_with_else_unspecified(if_condition, then_expression)
-    
-    # Adding extra else condition at end, this should never actually end up being used
-    expr += flip_expr(0)
+        #Constructing Trajectory
+        init_state_name = STATE_ + str(0)
+        expr = self.let_expr(init_state_name, self.discrete_distribution(initial_state))
+        current_state_name = init_state_name
+        for t in range(0, max_trajectory_length):
+            action_name = ACTION_ + str(t)
+            expr += self.let_expr(action_name, self.discrete_distribution(action_prior))
+            next_state_name = STATE_ + str(t + 1)
+            expr += self.let_expr(next_state_name, self.function_call("transition", current_state_name, action_name))
+            optimal_name = "OPTIMAL_" + str(t)
+            expr += self.let_expr(optimal_name, self.function_call("reward", next_state_name))
+            expr += self.observe_expr(optimal_name)
+            current_state_name = next_state_name
+        return expr
 
-    #Construct Function End
-    expr += NEWLINE + "}"
-    return expr + NEWLINE
+    def trajectory_query(self, max_trajectory_length=None):
+        #Default Arguments
+        if max_trajectory_length is None:
+            max_trajectory_length=self.max_trajectory_length
 
-#Call function with parameters STATE ACTION or just STATE if no action specified
-def function_call(func_name, state_name, action_name=""):
-    if action_name == "":
-        return func_name + LBRACKET + state_name + RBRACKET
-    else:
-        return func_name + LBRACKET + state_name + COMMA + SPACE + action_name + RBRACKET
+        expr = LBRACKET + ACTION_ + str(0)
+        for t in range(1, max_trajectory_length):
+            expr += COMMA + SPACE + ACTION_ + str(t)
+        expr += RBRACKET
+        return expr 
 
-'''
-Inputs:
+    def next_action_query(self, current_state, current_step_number, state_space=None):
+        #Default Arguments
+        if state_space is None:
+            state_space = self.state_space
 
-- initial_state - distribution over initial states, specified as a list of length = state space
-- max_length_of_trajectory - since dice can't do recursion, it can't handle infinite trajectories, hence
-we must use finite trajectories, this is the maximum length of the trajectory
-'''
-def base_trajectory_distribution(max_length_of_trajectory, initial_state, action_prior):
-    init_state_name = STATE_ + str(0)
-    expr = let_expr(init_state_name, discrete_distribution(initial_state))
-    current_state_name = init_state_name
-    for t in range(0, max_length_of_trajectory):
-        action_name = ACTION_ + str(t)
-        expr += let_expr(action_name, discrete_distribution(action_prior))
-        next_state_name = STATE_ + str(t + 1)
-        expr += let_expr(next_state_name, function_call("transition", current_state_name, action_name))
-        optimal_name = "OPTIMAL_" + str(t)
-        expr += let_expr(optimal_name, function_call("reward", next_state_name))
-        expr += observe_expr(optimal_name)
-        current_state_name = next_state_name
-    return expr
+        current_state_dice = self.get_dice_int(state_space.index(current_state), len(state_space))
+        expr = self.observe_expr(self.equals_comparison(STATE_ + str(current_step_number), self.get_dice_int(current_state, len(state_space))))
+        expr += ACTION_ + str(current_step_number)
+        return expr
 
-def trajectory_query(max_length_of_trajectory):
-    expr = LBRACKET + ACTION_ + str(0)
-    for t in range(1, max_length_of_trajectory):
-        expr += COMMA + SPACE + ACTION_ + str(t)
-    expr += RBRACKET
-    return expr 
+    def next_action(self, current_state, current_step_number):
+        return self.base_program + self.next_action_query(current_state, current_step_number, self.state_space)
 
-def next_action_query(state_space, current_state, current_step_number):
-    current_state_dice = get_dice_int(state_space.index(current_state), len(state_space))
-    expr = observe_expr(equals_comparison(STATE_ + str(current_step_number), get_dice_int(current_state, len(state_space))))
-    expr += ACTION_ + str(current_step_number)
-    return expr
 
-def next_action_distribution(max_length_of_trajectory, initial_state, action_prior, state_space, current_state, current_step_number):
-    return base_trajectory_distribution(max_length_of_trajectory, initial_state, action_prior) + next_action_query(state_space, current_state, current_step_number)
 
 #DUMMY PROBLEM TO TEST - PURSUER IN TINY CORRIDOR AGAINST STATIONARY EVADER
 def dummy_transition_function(state, action):
@@ -225,11 +279,9 @@ def dummy_reward_function(state):
 
 dummy_state_space = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9] #Corridor [P         E]
 dummy_action_space = [0, 1] #0 corresponds to LEFT and 1 corresponds to RIGHT
-dummy_trajectory_length = 15
+dummy_max_trajectory_length = 15
 dummy_initial_state = [1, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 dummy_action_prior = [0.5, 0.5]
 
-dice_reward_function = translate_reward_function(dummy_reward_function, dummy_state_space)
-dice_transition_function = translate_transition_function(dummy_transition_function, dummy_state_space, dummy_action_space)
-base_program = dice_reward_function + NEWLINE + dice_transition_function + NEWLINE + base_trajectory_distribution(dummy_trajectory_length, dummy_initial_state, dummy_action_prior)
-print(base_program + next_action_query(dummy_state_space, 0, 0))
+dice = DiceProgramGenerator(dummy_state_space, dummy_action_space, dummy_initial_state, dummy_action_prior,  dummy_reward_function, dummy_transition_function, dummy_max_trajectory_length)
+print(dice.next_action(0, 0))
