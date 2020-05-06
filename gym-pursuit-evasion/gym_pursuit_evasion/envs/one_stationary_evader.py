@@ -15,7 +15,8 @@ from gym import spaces
 from copy import deepcopy as deepcopy
 
 GAME_ART = ['###########',
-            '#P       E#',
+            '#P        #',
+            '#        E#',
             '###########'] 
 
 time_cost = -10

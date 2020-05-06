@@ -40,7 +40,7 @@ def main(argv=()):
     #Get transition function 
     transition_function = env.get_transition_function()
     #Set max trajectory length
-    max_trajectory_length = 11
+    max_trajectory_length = 11 #needs to be greater than shortest distance to evader for any meaningful inference
 
     #Create Agent
     agent = infer.DiceInferenceEngine(observed_state_space, action_space, initial_state_dist, action_prior, reward_function, transition_function, max_trajectory_length)
