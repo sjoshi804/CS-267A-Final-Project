@@ -247,15 +247,26 @@ class DiceProgramGenerator:
         expr += RBRACKET
         return expr 
 
-    def next_action_query(self, current_state, current_step_number, state_space):
-
+    def legacy_next_action_query(self, current_state, current_step_number, state_space):
         current_state_dice = self.get_dice_int(state_space.index(current_state), len(state_space))
         expr = self.observe_expr(self.equals_comparison(STATE_ + str(current_step_number), current_state_dice))
         expr += ACTION_ + str(current_step_number)
         return expr
 
-    def next_action(self, current_state, current_step_number):
-        return self.base_program + self.next_action_query(current_state, current_step_number, self.state_space)
+    def legacy_next_action(self, current_state, current_step_number):
+        return self.base_program + self.legacy_next_action_query(current_state, current_step_number, self.state_space)
+
+    def next_action(self, current_state):
+        current_state_dice = self.get_dice_int(self.state_space.index(current_state), len(self.state_space))
+        query = ACTION_ + str(0)
+        return self.set_initial_state(self.base_program, current_state_dice) + ACTION_ + str(0)
+
+    def set_initial_state(self, base_program, current_state_dice):
+        STATE_0_ID = "let STATE_0 = "
+        program = base_program.split(STATE_0_ID)
+        head = program[0]
+        tail = program[1][program[1].index("in"):]
+        return head + STATE_0_ID + current_state_dice + SPACE + tail
 
 class DiceInferenceEngine:
     """
@@ -304,7 +315,7 @@ class DiceInferenceEngine:
         
         #Create dice program and execute it
         with open(".infer/step_" + str(self.step_num) + ".dice", "w") as dice_file:
-            dice_file.write(self.program.next_action(state, self.step_num))
+            dice_file.write(self.program.next_action(state))
         cmd = self.path_to_dice + " " + ".infer/step_" + str(self.step_num) + ".dice"
         process = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE)
         output, error = process.communicate()
