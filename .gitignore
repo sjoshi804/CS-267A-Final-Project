@@ -11,3 +11,4 @@ gym-pursuit-evasion/gym_pursuit_evasion.egg-info/
 gym-pursuit-evasion/gym_pursuit_evasion/__pycache__/
 gym-pursuit-evasion/gym_pursuit_evasion/envs/__pycache__/
 .infer
+**/*.pyc
