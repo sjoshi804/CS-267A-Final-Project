@@ -40,7 +40,7 @@ def encoder_action(state, next_state):
 def agent_model(state=None, next_state=None):  
     #pyro.module("transition", transition)
     
-    p = pyro.param("p", torch.ones(4)/4)
+    p = pyro.param("p", torch.ones(4)/4, constraint=constraints.simplex)
     action = pyro.sample("action", dist.Categorical(p)) # up, down, left, right
     #state = pyro.param("state", torch.tensor([0, 0]))
     #next_state = pyro.param("state", torch.tensor([0, 0]))
