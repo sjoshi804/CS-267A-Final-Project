@@ -13,6 +13,8 @@ pyro.set_rng_seed(101)
 
 state = (0, 0)
 final_state = (1,2)
+HEIGHT = 2
+WIDTH = 9
 
 action_dict = {"up": 0, "down": 1, "left": 2, "right": 3}
 action_coords = [(-1, 0), (1, 0), (0, -1), (0, 1)]  # translations
@@ -31,45 +33,47 @@ def transition(state, action):
                       state[1] + action_coords[action][1])
     return next_state
 
-def unhash_state2(state):
-    if state == 0:
-        return (-2, 0)
-    elif state == 1:
-        return (-1, -1)
-    elif state == 2:
-        return (-1, 0)
-    elif state == 3:
-        return (-1, 1)
-    elif state == 4:
-        return (0, -2)
-    elif state == 5:
-        return (0, -1)
-    elif state == 6:
-        return (0, 0)
-    elif state == 7:
-        return (0, 1)
-    elif state == 8:
-        return (0, 2)
-    elif state == 9:
-        return (1, -1)
-    elif state == 10:
-        return (1, 0)
-    elif state == 11:
-        return (1, 1)
-    elif state == 12:
-        return (2, 0)
+#def unhash_state2(state):
+#    if state == 0:
+#        return (-2, 0)
+#    elif state == 1:
+#        return (-1, -1)
+#    elif state == 2:
+#        return (-1, 0)
+#    elif state == 3:
+#        return (-1, 1)
+#    elif state == 4:
+#        return (0, -2)
+#    elif state == 5:
+#        return (0, -1)
+#    elif state == 6:
+#        return (0, 0)
+#    elif state == 7:
+#        return (0, 1)
+#    elif state == 8:
+#        return (0, 2)
+#    elif state == 9:
+#        return (1, -1)
+#    elif state == 10:
+#        return (1, 0)
+#    elif state == 11:
+#        return (1, 1)
+#    elif state == 12:
+#        return (2, 0)
 
+# for a grid of HEIGHT * WIDTH
 def unhash_state(state):
-    #print(state)
-    return (int(state / 9), int(state % 9))
+    return (int(state // WIDTH), int(state % WIDTH))
 
 
 def convert_to_prob(state):
-    probs = [0.0] * 18
-    for i in range(0, 18):
+    num = HEIGHT * WIDTH
+    probs = [0.0] * num
+    for i in range(0, num):
         if unhash_state(i) == state:
             probs[i] = float(1)
             break   
+    ## if the state is not among the valid states, assign prob of 1 to a random state
     if (sum(probs) != float(1)):
         ind = random.randint(0, 18)
         probs[ind-1] = float(1)
