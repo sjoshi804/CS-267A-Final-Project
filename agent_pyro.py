@@ -12,7 +12,7 @@ import random
 pyro.set_rng_seed(101)
 
 state = (0, 0)
-final_state = (1,1)
+final_state = (1,2)
 
 action_dict = {"up": 0, "down": 1, "left": 2, "right": 3}
 action_coords = [(-1, 0), (1, 0), (0, -1), (0, 1)]  # translations
@@ -78,12 +78,7 @@ def convert_to_prob(state):
 def agent_model(state=(0, 0)):  
     p = torch.ones(4)/4
     action = pyro.sample("action", dist.Categorical(p)) # up, down, left, right
-    prob_1 = convert_to_prob(transition(state, action))
-#    while (sum(prob_1) != float(1)):
-#      p = torch.ones(4)/4
-#      action = pyro.sample("action", dist.Categorical(p)) # up, down, left, right
-#      prob_1 = convert_to_prob(transition(state, action))
-    
+    prob_1 = convert_to_prob(transition(state, action))    
     state_1 = unhash_state(pyro.sample("state_1", dist.Categorical(torch.tensor(prob_1))))
     pyro.sample("optimal", dist.Bernoulli(torch.tensor([exp(reward_function(state_1))])), obs=torch.tensor([1.]))
     
@@ -91,7 +86,13 @@ def agent_model(state=(0, 0)):
     action2 = pyro.sample("action2", dist.Categorical(p2))
     prob_2 = convert_to_prob(transition(state_1, action2))
     state_2 = unhash_state(pyro.sample("state_2", dist.Categorical(torch.tensor(prob_2))))
-    return pyro.sample("optimal2", dist.Bernoulli(torch.tensor([exp(reward_function(state_2))])), obs=torch.tensor([1.]))
+    pyro.sample("optimal2", dist.Bernoulli(torch.tensor([exp(reward_function(state_2))])), obs=torch.tensor([1.]))
+    
+    p3 = torch.ones(4)/4
+    action3 = pyro.sample("action3", dist.Categorical(p3))
+    prob_3 = convert_to_prob(transition(state_2, action3))
+    state_3 = unhash_state(pyro.sample("state_3", dist.Categorical(torch.tensor(prob_3))))
+    return pyro.sample("optimal3", dist.Bernoulli(torch.tensor([exp(reward_function(state_3))])), obs=torch.tensor([1.]))
 
 
 def agent_guide(state):
@@ -105,6 +106,11 @@ def agent_guide(state):
     action2 = pyro.sample("action2", dist.Categorical(p2_guide))
     prob_2 = convert_to_prob(transition(state_1, action2))
     state_2 = unhash_state(pyro.sample("state_2", dist.Categorical(torch.tensor(prob_2))))
+    
+    p3_guide = pyro.param("p3_guide", torch.ones(4)/4, constraint=constraints.simplex)
+    action3 = pyro.sample("action3", dist.Categorical(p3_guide))
+    prob_3 = convert_to_prob(transition(state_2, action3))
+    state_3 = unhash_state(pyro.sample("state_3", dist.Categorical(torch.tensor(prob_3))))
     #return action
 
 #print(unhash_state(16))
@@ -129,3 +135,4 @@ plt.show()
 
 print('p_guide = ', pyro.param("p_guide"))
 print('p2_guide = ', pyro.param("p2_guide"))
+print('p3_guide = ', pyro.param("p2_guide"))
