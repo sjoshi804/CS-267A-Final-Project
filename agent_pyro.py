@@ -11,7 +11,7 @@ from math import exp as exp
 pyro.set_rng_seed(101)
 
 state = (0, 0)
-final_state = (1,-1)
+final_state = (0,-2)
 
 action_dict = {"up": 0, "down": 1, "left": 2, "right": 3}
 action_coords = [(-1, 0), (1, 0), (0, -1), (0, 1)]  # translations
