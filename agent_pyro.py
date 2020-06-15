@@ -104,7 +104,6 @@ env = Monitor(gym.make('one-stationary-evader-v0'), './tmp/pursuit_evasion_infer
 state_gym = env.reset()
 
 current_state = state
-step_ = 0
 while (current_state != final_state):
   print("############################")
   print("Inferring new set of actions")
@@ -129,7 +128,6 @@ while (current_state != final_state):
     observation1, reward1, done, info1 = env.step(action)
     env.render()
     sleep(1)
-    step_ += 1
     if done:
       print("******************")
       print("Reached the evader")
@@ -139,8 +137,7 @@ while (current_state != final_state):
       break
     if current_state == final_state:
       break
-      
-print(step_)
+
 
 
 #plt.plot(losses)
