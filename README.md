@@ -6,7 +6,7 @@
 pip3 install -e gym-pursuit-evasion
 ```
 
-## Running the Inference Based Agent
+## Running the Inference Based Agent using Dice
 
 This is only supported for the stationary evader environment as of now. 
 Running the command below, has an inference based agent catch an evader
@@ -18,6 +18,14 @@ paradigm we are using which is explained here: https://arxiv.org/pdf/1805.00909.
 
 ```
 python3 -W ignore test.py
+```
+
+## Running The Inference using Pyro
+
+This is only supported for the stationary evader environment as of now. 
+
+```
+python3 -W ignore agent_pyro.py
 ```
 
 ## Running Pursuit Evasion with Random Evader and Human Pursuer
