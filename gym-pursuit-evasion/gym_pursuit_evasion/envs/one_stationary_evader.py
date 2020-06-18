@@ -28,7 +28,7 @@ RIGHT = 3
 
 class OneStationaryEvaderEnv(gym_pycolab.PyColabEnv):
     """A gridworld based environment with 1 randomly moving evader. The agent 
-    must catch the evader, reward = -1 for every timestep that the evader is 
+    must catch the evader, reward = -10 for every timestep that the evader is 
     not caught and reward = 0 when evader is caught. Evader is 'caught' when
     agent is on a square adjacent to it. The environment uses the pycolab 
     gridworld game engine with a gym wrapper provide by gym-pycolab."""

@@ -17,15 +17,7 @@ Note for the inference based agent, rewards must be negative due to the
 paradigm we are using which is explained here: https://arxiv.org/pdf/1805.00909.pdf
 
 ```
-python3 -W ignore agent_dice.py
-```
-
-## Running The Inference using Pyro
-
-This is only supported for the stationary evader environment as of now. 
-
-```
-python3 -W ignore agent_pyro.py
+python3 -W ignore agent-dice.py
 ```
 
 ## Running Pursuit Evasion with Random Evader and Human Pursuer
