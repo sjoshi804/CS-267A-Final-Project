@@ -17,7 +17,7 @@ Note for the inference based agent, rewards must be negative due to the
 paradigm we are using which is explained here: https://arxiv.org/pdf/1805.00909.pdf
 
 ```
-python3 -W ignore test.py
+python3 -W ignore agent_dice.py
 ```
 
 ## Running The Inference using Pyro
