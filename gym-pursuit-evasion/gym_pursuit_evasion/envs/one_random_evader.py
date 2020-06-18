@@ -15,10 +15,10 @@ from gym import spaces
 from copy import deepcopy as deepcopy
 
 
-GAME_ART = ['###########',
-            '#P        #',
-            '#        E#',
-            '###########'] 
+GAME_ART = ['#######',
+            '#P    #',
+            '#    E#',
+            '#######'] 
 
 time_cost = -10
 goal_reward = 0
@@ -41,6 +41,11 @@ class OneRandomEvaderEnv(gym_pycolab.PyColabEnv):
             max_iterations=max_iterations,
             default_reward=default_reward,
             action_space=spaces.Discrete(4))
+    def get_initial_state(self):
+      board = []
+      for row in GAME_ART:
+        board.append(list(row))
+      return board
 
     def make_game(self):
         """Builds and returns a game with Pursuader and Evader."""
@@ -174,10 +179,16 @@ class OneRandomEvaderEnv(gym_pycolab.PyColabEnv):
 
         #Return list of probabilities of transition to each state in observed_state_space
         def prob_next_state(state):
-          if state == next_state_up or state == next_state_down or state == next_state_left or state == next_state_right:
-            return 0.25
-          else:
-            return 0
+          count = 0
+          if state == next_state_up:
+            count += 1
+          if state == next_state_down:
+            count += 1
+          if state == next_state_left:
+            count += 1
+          if state == next_state_right:
+            count += 1
+          return count * 0.25
 
         return [prob_next_state(state) for state in self.get_observed_state_space()]
       
@@ -297,10 +308,10 @@ class EvaderSprite(prefab_sprites.MazeWalker):
   def update(self, actions, board, layers, backdrop, things, the_plot):
     del layers, backdrop, things   # Unused.
 
-    random_action = randint(0, 4)
+    random_action = randint(0, 3)
 
     # Apply motion commands.
-    if random_action == 0 or random_action == 4:    # walk upward?
+    if random_action == 0:    # walk upward?
       self._north(board, the_plot)
     elif random_action == 1:  # walk downward?
       self._south(board, the_plot)

@@ -98,7 +98,7 @@ def agent_guide(state, len_trajectory):
 # Build an environment
     
 # Create and record episode - remove Monitor statement if recording not desired
-env = Monitor(gym.make('one-stationary-evader-v0'), './tmp/pursuit_evasion_infer_pursuer_vs_stationary_evader', force=True)
+env = Monitor(gym.make('one-random-evader-v0'), './tmp/pursuit_evasion_infer_pursuer_vs_random_evader', force=True)
 
 ##Reset state
 state_gym = env.reset()
